@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"rest.api/db"
@@ -13,6 +14,7 @@ func main() {
 	
 	server := gin.Default()
 
+	server.GET("/event/:id", getEvent)
 	server.GET("/events", getEvents)
 	server.POST("/events", createEvent)
 
@@ -55,4 +57,27 @@ func createEvent(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusCreated, event)
+}
+
+func getEvent(ctx *gin.Context) {
+	id, err := strconv.ParseInt(ctx.Params.ByName("id"), 10, 64)
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid param",
+		})
+		return
+	}
+
+	event, err := models.GetEventById(id)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Could not fetch event",
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, event)
+
 }
