@@ -41,6 +41,7 @@ func createEvent(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Failed to save data",
 		})
+		return
 	}
 
 	ctx.JSON(http.StatusCreated, event)
@@ -109,5 +110,35 @@ func updateEvent(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, gin.H {
 		"message": "Event updated",
+	})
+}
+
+func deleteEvent(ctx *gin.Context) {
+	id, err := strconv.ParseInt(ctx.Params.ByName("id"), 10, 64)
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid param",
+		})
+		return
+	}
+
+	event, err := models.GetEventById(id)
+
+	if err != nil {
+		return
+	}
+
+	err = event.Delete()
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H {
+			"message": "Delete operation failed",
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H {
+		"message": "Event deleted successfully",
 	})
 }
