@@ -68,5 +68,6 @@ func login(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "Login successful",
 		"token": token,
+		"user": user,
 	})
 }
