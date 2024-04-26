@@ -23,8 +23,6 @@ func getEvents(ctx *gin.Context) {
 
 func createEvent(ctx *gin.Context) {
 
-	
-
 	var event models.Event
 	err := ctx.ShouldBindJSON(&event)
 
@@ -82,9 +80,17 @@ func updateEvent(ctx *gin.Context) {
 		return
 	}
 
-	_, err = models.GetEventById(id)
+	userId := ctx.GetInt64("userId")
+	event, err := models.GetEventById(id)
 
 	if err != nil {
+		return
+	}
+
+	if event.UserID != userId {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"message": "Not authorized to update",
+		})
 		return
 	}
 
@@ -110,7 +116,7 @@ func updateEvent(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H {
+	ctx.JSON(http.StatusOK, gin.H{
 		"message": "Event updated",
 	})
 }
@@ -131,16 +137,25 @@ func deleteEvent(ctx *gin.Context) {
 		return
 	}
 
+	userId := ctx.GetInt64("userId")
+
+	if event.UserID != userId {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"message": "Not authorized to update",
+		})
+		return
+	}
+
 	err = event.Delete()
 
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Delete operation failed",
 		})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H {
+	ctx.JSON(http.StatusOK, gin.H{
 		"message": "Event deleted successfully",
 	})
 }
